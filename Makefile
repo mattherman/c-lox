@@ -3,9 +3,9 @@ CFLAGS=-I.
 
 ODIR=obj
 
-DEPS = common.h chunk.h memory.h debug.h
+DEPS = common.h chunk.h memory.h debug.h value.h
 
-_OBJ = main.o chunk.o memory.o debug.o
+_OBJ = main.o chunk.o memory.o debug.o value.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: %.c $(DEPS)
