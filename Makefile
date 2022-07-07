@@ -1,14 +1,17 @@
+ODIR=./obj
+IDIR=./src
+SRCDIR=./src
+
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-I$(IDIR)
 
-ODIR=obj
-
-DEPS = common.h chunk.h memory.h debug.h value.h vm.h compiler.h scanner.h
+_DEPS = common.h chunk.h memory.h debug.h value.h vm.h compiler.h scanner.h
+DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
 
 _OBJ = main.o chunk.o memory.o debug.o value.o vm.o compiler.o scanner.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
-$(ODIR)/%.o: %.c $(DEPS)
+$(ODIR)/%.o: $(SRCDIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 clox: $(OBJ)
