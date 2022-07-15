@@ -3,3 +3,5 @@ obj/*.o
 clox
 
 .vscode/
+
+.ccls-cache
