@@ -80,6 +80,10 @@ static void skipWhitespace() {
             case '\t':
                 advance();
                 break;
+            case '\n':
+                scanner.line++;
+                advance();
+                break;
             case '/':
                 if (peekNext() == '/') {
                     while (peek() != '\n' && !isAtEnd()) advance();
@@ -197,10 +201,6 @@ Token scanToken() {
         case '>': return makeToken(
             match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
         case '"': return string();
-        case '\n':
-            scanner.line++;
-            advance();
-            break;
     }
 
     return errorToken("Unexpected character.");
