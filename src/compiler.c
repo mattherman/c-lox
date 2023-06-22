@@ -497,6 +497,27 @@ static void expressionStatement() {
 }
 
 static void forStatement() {
+    /* ```for (<initializer>; <condition>; <increment>) { <block> }```
+     *
+     * {initializer}
+     * <condition> <---------
+     * OP_JUMP_IF_FALSE --   |
+     * OP_POP             |  |
+     * OP_JUMP ------     |  |
+     * {increment} <-|-   |  |
+     * OP_POP        | |  |  |
+     * OP_LOOP ------|-|-----
+     * {block} <-----  |  |
+     * OP_LOOP --------   |
+     * OP_POP <-----------
+     *
+     * Note: The increment is compiled before the body of the statement,
+     * but needs to run after it (at the end of each loop iteration). The
+     * first OP_JUMP jumps over the increment to the body. The OP_LOOP
+     * after the body then jumps back to run the increment. Finally, the
+     * OP_LOOP following the increment loops back to the condition to begin
+     * the statement again.
+     */
     beginScope();
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
     if (match(TOKEN_SEMICOLON)) {
@@ -517,7 +538,17 @@ static void forStatement() {
         emitByte(OP_POP);
     }
 
-    consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
+    if (!match(TOKEN_RIGHT_PAREN)) {
+        int bodyJump = emitJump(OP_JUMP);
+        int incrementStart = currentChunk()->count;
+        expression();
+        emitByte(OP_POP);
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after for clauses.");
+
+        emitLoop(loopStart);
+        loopStart = incrementStart;
+        patchJump(bodyJump);
+    }
 
     statement();
     emitLoop(loopStart);
@@ -527,7 +558,6 @@ static void forStatement() {
         emitByte(OP_POP);
     }
 
-    // TODO: Increment clause
 
     endScope();
 }
